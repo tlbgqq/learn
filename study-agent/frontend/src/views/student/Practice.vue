@@ -141,7 +141,16 @@ const loadQuestion = async () => {
       // 根据知识点加载题目
       const questions = await questionApi.getByKnowledgePoint(kpId)
       if (questions && questions.length > 0) {
-        currentQuestion.value = questions[Math.floor(Math.random() * questions.length)]
+        const excludeId = route.query.excludeQuestionId ? parseInt(route.query.excludeQuestionId) : null
+        let availableQuestions = questions
+        if (excludeId) {
+          availableQuestions = questions.filter(q => q.id !== excludeId)
+        }
+        if (availableQuestions.length > 0) {
+          currentQuestion.value = availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+        } else {
+          currentQuestion.value = questions[Math.floor(Math.random() * questions.length)]
+        }
         if (currentQuestion.value.type === '选择' && currentQuestion.value.options) {
           try {
             choices.value = JSON.parse(currentQuestion.value.options)

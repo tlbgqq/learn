@@ -79,11 +79,16 @@ const loadSubjects = async () => {
 }
 
 const practiceAgain = (item) => {
-  // 优先用 questionId 加载特定题目，其次用 kpId
-  if (item.questionId) {
+  if (item.knowledgePointId && item.knowledgePointId > 0) {
+    router.push({
+      path: '/student/practice',
+      query: {
+        kpId: item.knowledgePointId,
+        excludeQuestionId: item.questionId
+      }
+    })
+  } else if (item.questionId) {
     router.push({ path: '/student/practice', query: { questionId: item.questionId } })
-  } else if (item.knowledgePointId && item.knowledgePointId > 0) {
-    router.push({ path: '/student/practice', query: { kpId: item.knowledgePointId } })
   } else {
     router.push('/student/practice')
   }
