@@ -92,14 +92,14 @@ CREATE TABLE IF NOT EXISTS t_student_answer (
     ai_analysis TEXT NOT NULL COMMENT 'AI分析结果',
     knowledge_point_id BIGINT NOT NULL DEFAULT 0 COMMENT '关联知识点ID',
     mastery_level DOUBLE NOT NULL DEFAULT 0.0 COMMENT '掌握度：0.0-1.0',
-    is_corrected TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已改正：0-未改正，1-已改正',
+    corrected TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已改正：0-未改正，1-已改正',
     del TINYINT(1) NOT NULL DEFAULT 0 COMMENT '删除标记：0-未删除，1-已删除',
     create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     modify_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间'
 ) COMMENT='学生答题记录表';
 
--- 为已存在的表添加 is_corrected 字段（迁移用）
-ALTER TABLE t_student_answer ADD COLUMN IF NOT EXISTS is_corrected TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已改正：0-未改正，1-已改正';
+-- 为已存在的表添加 corrected 字段（迁移用）
+ALTER TABLE t_student_answer ADD COLUMN IF NOT EXISTS corrected TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已改正：0-未改正，1-已改正';
 
 -- 学生知识点掌握度表
 CREATE TABLE IF NOT EXISTS t_student_knowledge_mastery (

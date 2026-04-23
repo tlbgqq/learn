@@ -476,11 +476,11 @@ public class SprintService {
                         .eq(StudentAnswer::getStudentId, studentId)
                         .eq(StudentAnswer::getQuestionId, questionId)
                         .eq(StudentAnswer::getIsCorrect, false)
-                        .eq(StudentAnswer::getIsCorrected, false)
+                        .eq(StudentAnswer::getCorrected, false)
         );
 
         for (StudentAnswer wrongAnswer : wrongAnswers) {
-            wrongAnswer.setIsCorrected(true);
+            wrongAnswer.setCorrected(true);
             studentAnswerMapper.updateById(wrongAnswer);
             log.info("标记错题为已改正，studentAnswerId: {}, questionId: {}", wrongAnswer.getId(), questionId);
         }
