@@ -1,0 +1,79 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Backend
+backend/target/
+backend/*.jar
+backend/*.war
+backend/node_modules/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.npm/
+frontend/.eslintcache
+frontend/.vite/
+
+# Build
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+*~
+
+# Temp files
+*.tmp
+*.temp
+.cache/
+tmp/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Secrets
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+h2/
+derby/
+
+# Test
+test-output/
+surefire-reports/
+coverage/
+
+# Misc
+*.bak
+*.orig
+*.rej

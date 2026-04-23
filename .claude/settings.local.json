@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn compile:*)",
+      "Bash(dir \"D:\\\\code\\\\learn\")",
+      "Bash(npm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(powershell:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_console_messages",
+      "Read(//d/code/learn/study-agent/frontend/**)",
+      "Bash(npm run:*)",
+      "mcp__playwright__browser_wait_for",
+      "Bash(dir)",
+      "Bash(powershell.exe:*)"
+    ]
+  }
+}

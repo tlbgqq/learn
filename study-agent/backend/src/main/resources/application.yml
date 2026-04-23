@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: study-agent
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/study_agent?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: KEgf3USDUpTan@W4WijNYZ
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.studyagent.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: del
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      insert-strategy: always
+      update-strategy: always
+
+server:
+  port: 8080
+
+jwt:
+  secret: StudyAgentSecretKey2024VeryLongAndSecure
+  expiration: 86400000
+
+logging:
+  level:
+    com.studyagent: INFO
+    dev.langchain4j: DEBUG

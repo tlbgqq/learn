@@ -1,0 +1,21 @@
+# Playwright Test Results
+
+# Screenshots captured on test failure
+test-results/**/screenshots/
+
+# Videos captured on test failure
+test-results/**/videos/
+
+# HTML report
+test-results/html/
+
+# Trace files
+test-results/**/trace.zip
+test-results/**/traces/
+
+# Downloaded attachments
+test-results/**/attachments/
+
+# Temporary files
+test-results/*.tmp
+test-results/*.log
