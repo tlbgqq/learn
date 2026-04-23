@@ -21,6 +21,15 @@
           @keyup.enter="submitAnswer"
         />
 
+        <el-input
+          v-else-if="currentQuestion.type === '解答'"
+          v-model="answer"
+          :rows="6"
+          placeholder="请输入答案（可多行输入）"
+          resize="none"
+          type="textarea"
+        />
+
         <div v-else class="choice-list">
           <div
             v-for="(choice, index) in choices"
