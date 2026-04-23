@@ -159,6 +159,8 @@ public class QuestionService {
                     log.warn("解析知识点ID失败: {}", question.getKnowledgePointIds(), e);
                 }
             }
+
+            markWrongAnswersAsCorrected(studentId, questionId);
         }
 
         return studentAnswer;
@@ -208,11 +210,28 @@ public class QuestionService {
         return 0;
     }
 
+    private void markWrongAnswersAsCorrected(Long studentId, Long questionId) {
+        List<StudentAnswer> wrongAnswers = studentAnswerMapper.selectList(
+                new LambdaQueryWrapper<StudentAnswer>()
+                        .eq(StudentAnswer::getStudentId, studentId)
+                        .eq(StudentAnswer::getQuestionId, questionId)
+                        .eq(StudentAnswer::getIsCorrect, false)
+                        .eq(StudentAnswer::getIsCorrected, false)
+        );
+
+        for (StudentAnswer wrongAnswer : wrongAnswers) {
+            wrongAnswer.setIsCorrected(true);
+            studentAnswerMapper.updateById(wrongAnswer);
+            log.info("标记错题为已改正，studentAnswerId: {}, questionId: {}", wrongAnswer.getId(), questionId);
+        }
+    }
+
     public List<WrongAnswerResponse> getWrongAnswers(Long studentId) {
         List<StudentAnswer> answers = studentAnswerMapper.selectList(
                 new LambdaQueryWrapper<StudentAnswer>()
                         .eq(StudentAnswer::getStudentId, studentId)
                         .eq(StudentAnswer::getIsCorrect, false)
+                        .eq(StudentAnswer::getIsCorrected, false)
         );
 
         List<WrongAnswerResponse> responses = new ArrayList<>();
