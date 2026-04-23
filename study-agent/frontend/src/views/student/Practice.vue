@@ -130,8 +130,104 @@ const loadQuestion = async () => {
   try {
     const questionId = route.query.questionId
     const kpId = route.query.kpId
+    const studentAnswerId = route.query.studentAnswerId
+    const excludeQuestionId = route.query.excludeQuestionId
 
-    if (questionId) {
+    if (studentAnswerId) {
+      // 再练一练场景：必须排除原题，从知识点中随机选择
+      const excludeId = excludeQuestionId ? parseInt(excludeQuestionId) : null
+      
+      if (kpId) {
+        // 有知识点ID，从知识点中随机选择
+        const questions = await questionApi.getByKnowledgePoint(kpId)
+        if (questions && questions.length > 0) {
+          let availableQuestions = questions
+          if (excludeId) {
+            availableQuestions = questions.filter(q => q.id !== excludeId)
+          }
+          if (availableQuestions.length > 0) {
+            currentQuestion.value = availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+          } else {
+            currentQuestion.value = questions[Math.floor(Math.random() * questions.length)]
+          }
+          if (currentQuestion.value.type === '选择' && currentQuestion.value.options) {
+            try {
+              choices.value = JSON.parse(currentQuestion.value.options)
+            } catch {
+              choices.value = ['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4']
+            }
+          }
+        } else {
+          currentQuestion.value = null
+        }
+      } else if (excludeId) {
+        // 没有知识点ID，但有要排除的题目ID，先获取题目详情来获取知识点
+        const originalQuestion = await questionApi.getById(excludeId)
+        if (originalQuestion && originalQuestion.knowledgePointIds) {
+          // 从题目中解析知识点ID
+          const kpIds = originalQuestion.knowledgePointIds.split(',').map(id => id.trim()).filter(id => id)
+          if (kpIds.length > 0) {
+            // 使用第一个知识点ID
+            const firstKpId = kpIds[0]
+            const questions = await questionApi.getByKnowledgePoint(firstKpId)
+            if (questions && questions.length > 0) {
+              let availableQuestions = questions.filter(q => q.id !== excludeId)
+              if (availableQuestions.length > 0) {
+                currentQuestion.value = availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+              } else {
+                // 如果知识点下只有这一道题，从科目中随机选择
+                const subjectId = originalQuestion.subjectId || 2
+                const subjectQuestions = await questionApi.getBySubject(subjectId)
+                if (subjectQuestions && subjectQuestions.length > 0) {
+                  availableQuestions = subjectQuestions.filter(q => q.id !== excludeId)
+                  if (availableQuestions.length > 0) {
+                    currentQuestion.value = availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+                  } else {
+                    currentQuestion.value = subjectQuestions[Math.floor(Math.random() * subjectQuestions.length)]
+                  }
+                } else {
+                  currentQuestion.value = null
+                }
+              }
+              if (currentQuestion.value && currentQuestion.value.type === '选择' && currentQuestion.value.options) {
+                try {
+                  choices.value = JSON.parse(currentQuestion.value.options)
+                } catch {
+                  choices.value = ['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4']
+                }
+              }
+            } else {
+              currentQuestion.value = null
+            }
+          } else {
+            // 题目没有知识点，从科目中随机选择
+            const subjectId = originalQuestion.subjectId || 2
+            const subjectQuestions = await questionApi.getBySubject(subjectId)
+            if (subjectQuestions && subjectQuestions.length > 0) {
+              let availableQuestions = subjectQuestions.filter(q => q.id !== excludeId)
+              if (availableQuestions.length > 0) {
+                currentQuestion.value = availableQuestions[Math.floor(Math.random() * availableQuestions.length)]
+              } else {
+                currentQuestion.value = subjectQuestions[Math.floor(Math.random() * subjectQuestions.length)]
+              }
+              if (currentQuestion.value.type === '选择' && currentQuestion.value.options) {
+                try {
+                  choices.value = JSON.parse(currentQuestion.value.options)
+                } catch {
+                  choices.value = ['A. 选项1', 'B. 选项2', 'C. 选项3', 'D. 选项4']
+                }
+              }
+            } else {
+              currentQuestion.value = null
+            }
+          }
+        } else {
+          currentQuestion.value = null
+        }
+      } else {
+        currentQuestion.value = null
+      }
+    } else if (questionId) {
       // 加载指定题目
       const question = await questionApi.getById(questionId)
       if (question) {

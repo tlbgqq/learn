@@ -89,7 +89,13 @@ const practiceAgain = (item) => {
       }
     })
   } else if (item.questionId) {
-    router.push({ path: '/student/practice', query: { questionId: item.questionId, studentAnswerId: item.id } })
+    router.push({
+      path: '/student/practice',
+      query: {
+        excludeQuestionId: item.questionId,
+        studentAnswerId: item.id
+      }
+    })
   } else {
     router.push('/student/practice')
   }
