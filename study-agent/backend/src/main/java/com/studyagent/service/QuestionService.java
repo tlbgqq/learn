@@ -117,7 +117,7 @@ public class QuestionService {
     }
 
     @Transactional
-    public StudentAnswer submitAnswer(Long studentId, Long questionId, String answer) {
+    public StudentAnswer submitAnswer(Long studentId, Long questionId, String answer, Long studentAnswerId) {
         Question question = questionMapper.selectById(questionId);
         if (question == null) {
             throw new RuntimeException("题目不存在");
@@ -160,7 +160,9 @@ public class QuestionService {
                 }
             }
 
-            markWrongAnswersAsCorrected(studentId, questionId);
+            if (studentAnswerId != null) {
+                markWrongAnswerAsCorrected(studentId, studentAnswerId);
+            }
         }
 
         return studentAnswer;
@@ -210,19 +212,12 @@ public class QuestionService {
         return 0;
     }
 
-    private void markWrongAnswersAsCorrected(Long studentId, Long questionId) {
-        List<StudentAnswer> wrongAnswers = studentAnswerMapper.selectList(
-                new LambdaQueryWrapper<StudentAnswer>()
-                        .eq(StudentAnswer::getStudentId, studentId)
-                        .eq(StudentAnswer::getQuestionId, questionId)
-                        .eq(StudentAnswer::getIsCorrect, false)
-                        .eq(StudentAnswer::getCorrected, false)
-        );
-
-        for (StudentAnswer wrongAnswer : wrongAnswers) {
+    private void markWrongAnswerAsCorrected(Long studentId, Long studentAnswerId) {
+        StudentAnswer wrongAnswer = studentAnswerMapper.selectById(studentAnswerId);
+        if (wrongAnswer != null && wrongAnswer.getStudentId().equals(studentId) && !wrongAnswer.getCorrected()) {
             wrongAnswer.setCorrected(true);
             studentAnswerMapper.updateById(wrongAnswer);
-            log.info("标记错题为已改正，studentAnswerId: {}, questionId: {}", wrongAnswer.getId(), questionId);
+            log.info("标记错题为已改正，studentAnswerId: {}", studentAnswerId);
         }
     }
 

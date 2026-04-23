@@ -139,8 +139,6 @@ public class SprintService {
                     }
                 }
             }
-
-            markWrongAnswersAsCorrected(studentId, questionId);
         } else {
             resetCombo(sessionId, studentId);
             incrementWrong(sessionId);
@@ -468,22 +466,6 @@ public class SprintService {
 
     private String getSessionData(String key) {
         return null;
-    }
-
-    private void markWrongAnswersAsCorrected(Long studentId, Long questionId) {
-        List<StudentAnswer> wrongAnswers = studentAnswerMapper.selectList(
-                new LambdaQueryWrapper<StudentAnswer>()
-                        .eq(StudentAnswer::getStudentId, studentId)
-                        .eq(StudentAnswer::getQuestionId, questionId)
-                        .eq(StudentAnswer::getIsCorrect, false)
-                        .eq(StudentAnswer::getCorrected, false)
-        );
-
-        for (StudentAnswer wrongAnswer : wrongAnswers) {
-            wrongAnswer.setCorrected(true);
-            studentAnswerMapper.updateById(wrongAnswer);
-            log.info("标记错题为已改正，studentAnswerId: {}, questionId: {}", wrongAnswer.getId(), questionId);
-        }
     }
 
     private Integer getBestScore(Long studentId) {

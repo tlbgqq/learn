@@ -57,7 +57,8 @@ public class QuestionController {
         StudentAnswer answer = questionService.submitAnswer(
                 request.getStudentId(),
                 request.getQuestionId(),
-                request.getAnswer()
+                request.getAnswer(),
+                request.getStudentAnswerId()
         );
         return ResponseEntity.ok(answer);
     }
