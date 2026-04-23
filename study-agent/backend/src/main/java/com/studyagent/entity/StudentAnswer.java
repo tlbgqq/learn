@@ -19,7 +19,7 @@ public class StudentAnswer {
     private String aiAnalysis = "";
     private Long knowledgePointId;
     private Double masteryLevel;
-    private Boolean isCorrected = false;
+    private Boolean corrected = false;
 
     @TableLogic
     private Integer del = 0;
