@@ -1,7 +1,6 @@
 package com.studyagent.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.studyagent.ai.QuestionAnalysisService;
 import com.studyagent.dto.WrongAnswerResponse;
 import com.studyagent.entity.KnowledgePoint;
 import com.studyagent.entity.Question;
@@ -12,6 +11,7 @@ import com.studyagent.mapper.QuestionMapper;
 import com.studyagent.mapper.StudentAnswerMapper;
 import com.studyagent.mapper.StudentKnowledgeMasteryMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +20,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class QuestionService {
 
     private final QuestionMapper questionMapper;
@@ -27,7 +28,7 @@ public class QuestionService {
     private final StudentKnowledgeMasteryMapper masteryMapper;
     private final KnowledgePointMapper knowledgePointMapper;
     private final StudentService studentService;
-    private final QuestionAnalysisService analysisService;
+    private final AsyncAnalysisService asyncAnalysisService;
 
     /**
      * 判断答案是否正确
@@ -131,27 +132,32 @@ public class QuestionService {
         studentAnswerMapper.insert(studentAnswer);
 
         if (!isCorrect) {
-            // 调用 AI 分析错因
-            QuestionAnalysisService.AnalysisResult analysis = analysisService.analyzeWrongAnswer(
+            if (question.getKnowledgePointIds() != null && !question.getKnowledgePointIds().isEmpty()) {
+                try {
+                    Long kpId = Long.parseLong(question.getKnowledgePointIds().split(",")[0]);
+                    studentAnswer.setKnowledgePointId(kpId);
+                    updateMastery(studentId, kpId, false);
+                } catch (NumberFormatException e) {
+                    log.warn("解析知识点ID失败: {}", question.getKnowledgePointIds(), e);
+                }
+            }
+            
+            log.info("提交异步分析任务，studentAnswerId: {}", studentAnswer.getId());
+            asyncAnalysisService.analyzeWrongAnswerAsync(
+                    studentAnswer.getId(),
                     question.getContent(),
                     answer,
                     question.getAnswer()
             );
-            studentAnswer.setErrorType(analysis.errorType());
-            studentAnswer.setAiAnalysis(analysis.practiceSuggestion());
-            studentAnswer.setMasteryLevel(analysis.masteryLevel());
-            studentAnswerMapper.updateById(studentAnswer);
-
-            if (question.getKnowledgePointIds() != null) {
-                Long kpId = Long.parseLong(question.getKnowledgePointIds().split(",")[0]);
-                studentAnswer.setKnowledgePointId(kpId);
-                updateMastery(studentId, kpId, false);
-            }
-        } else if (isCorrect) {
+        } else {
             studentService.addExpAndGold(studentId, 5, 10);
-            if (question.getKnowledgePointIds() != null) {
-                Long kpId = Long.parseLong(question.getKnowledgePointIds().split(",")[0]);
-                updateMastery(studentId, kpId, true);
+            if (question.getKnowledgePointIds() != null && !question.getKnowledgePointIds().isEmpty()) {
+                try {
+                    Long kpId = Long.parseLong(question.getKnowledgePointIds().split(",")[0]);
+                    updateMastery(studentId, kpId, true);
+                } catch (NumberFormatException e) {
+                    log.warn("解析知识点ID失败: {}", question.getKnowledgePointIds(), e);
+                }
             }
         }
 
