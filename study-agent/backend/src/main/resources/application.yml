@@ -20,8 +20,8 @@ mybatis-plus:
       logic-delete-field: del
       logic-delete-value: 1
       logic-not-delete-value: 0
-      insert-strategy: always
-      update-strategy: always
+      insert-strategy: not_null
+      update-strategy: not_null
 
 server:
   port: 8080
