@@ -199,11 +199,15 @@ const submitAnswer = async () => {
   if (!answer.value || !currentQuestion.value) return
 
   try {
-    const result = await questionApi.submitAnswer({
+    const submitData = {
       studentId: studentStore.id,
       questionId: currentQuestion.value.id,
       answer: answer.value
-    })
+    }
+    if (route.query.studentAnswerId) {
+      submitData.studentAnswerId = parseInt(route.query.studentAnswerId)
+    }
+    const result = await questionApi.submitAnswer(submitData)
 
     if (result.isCorrect) {
       combo.value++

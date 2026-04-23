@@ -84,11 +84,12 @@ const practiceAgain = (item) => {
       path: '/student/practice',
       query: {
         kpId: item.knowledgePointId,
-        excludeQuestionId: item.questionId
+        excludeQuestionId: item.questionId,
+        studentAnswerId: item.id
       }
     })
   } else if (item.questionId) {
-    router.push({ path: '/student/practice', query: { questionId: item.questionId } })
+    router.push({ path: '/student/practice', query: { questionId: item.questionId, studentAnswerId: item.id } })
   } else {
     router.push('/student/practice')
   }
