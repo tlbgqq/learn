@@ -2,21 +2,20 @@ package com.studyagent.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.dto.ExamParseResult;
-import com.studyagent.service.ApiKeyService;
-import com.studyagent.service.OcrService;
+import dev.langchain4j.data.message.ImageContent;
+import dev.langchain4j.data.message.TextContent;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,8 +25,7 @@ import java.util.Map;
 @CrossOrigin
 public class ImageParsingTestController {
 
-    private final OcrService ocrService;
-    private final ApiKeyService apiKeyService;
+    private final ChatModel chatModel;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping(value = "/image-parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -40,22 +38,22 @@ public class ImageParsingTestController {
                     image.getSize(),
                     image.getContentType());
 
-            // 1. OCR 识别图片文字
-            log.info("Step 1: OCR recognition...");
-            String ocrText = ocrService.recognizeText(image);
-            log.info("OCR result length: {}, content preview: {}",
-                    ocrText.length(), ocrText);
+            // 1. 将图片转换为 Base64 编码
+            log.info("Step 1: Convert image to Base64...");
+            String base64Image = Base64.getEncoder().encodeToString(image.getBytes());
+            String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
+            log.info("Image converted to Base64, length: {}", base64Image.length());
 
-            // 2. 发给 MiniMax AI 整理成结构化数据
-            log.info("Step 2: Send to AI for structuring...");
-            String structuredJson = sendToAi(ocrText);
+            // 2. 使用 langchain4j 直接调用大模型进行图像识别和结构化
+            log.info("Step 2: Send image to AI for vision recognition and structuring...");
+            String structuredJson = sendImageToAi(base64Image, mimeType);
 
             // 3. 解析 JSON 结果
             log.info("Step 3: Parse AI response...");
             ExamParseResult examResult = objectMapper.readValue(structuredJson, ExamParseResult.class);
 
             result.put("success", true);
-            result.put("ocrText", ocrText);
+            result.put("ocrText", "Vision AI 直接识别（使用视觉模型");
             result.put("examResult", examResult);
             result.put("imageSize", image.getSize());
             result.put("imageName", image.getOriginalFilename());
@@ -71,19 +69,8 @@ public class ImageParsingTestController {
         }
     }
 
-    private String sendToAi(String ocrText) throws Exception {
-        String apiKey = apiKeyService.getApiKeyValue("minimax")
-                .orElseThrow(() -> new IllegalStateException("API key not found for minimax"));
-        String baseUrl = apiKeyService.getBaseUrl("minimax")
-                .orElse("https://api.minimaxi.com");
-
-        // 获取模型名称
-        String modelName = apiKeyService.getModelName("minimax").orElse("MiniMax-M2.7");
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", modelName);
-
-        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。\n" +
+    private String sendImageToAi(String base64Image, String mimeType) throws Exception {
+        String prompt = "请分析这张试卷图片，提取信息并以JSON格式返回。\n" +
                 "JSON格式：\n" +
                 "{\n" +
                 "  \"studentName\": \"学生姓名\",\n" +
@@ -100,59 +87,30 @@ public class ImageParsingTestController {
                 "    }\n" +
                 "  ]\n" +
                 "}\n\n" +
-                "OCR识别内容：\n" + ocrText;
+                "请直接返回JSON格式的结果，不要包含任何其他说明文字。";
 
-        Map<String, Object> message = new HashMap<>();
-        message.put("role", "user");
-        message.put("content", prompt);
+        UserMessage userMessage = UserMessage.from(
+                ImageContent.from(base64Image, mimeType),
+                TextContent.from(prompt)
+        );
 
-        requestBody.put("messages", new Map[]{message});
+        log.info("Sending image to AI: using ChatModel (langchain4j)");
+        ChatResponse response = chatModel.chat(userMessage);
 
-        String url = baseUrl + "/messages";
+        String aiText = response.aiMessage().text();
+        log.info("AI response: {}", aiText);
 
-        RestTemplate restTemplate = new RestTemplate();
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(30000);
-        factory.setReadTimeout(60000);
-        restTemplate.setRequestFactory(factory);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + apiKey);
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-        log.info("Sending to AI: model={}, prompt length={}", modelName, prompt.length());
-        ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
-
-        log.info("AI response: {}", response.getBody());
-
-        // 解析 AI 返回的 content 中的 text
-        String aiText = extractTextFromResponse(response.getBody());
         return aiText;
-    }
-
-    private String extractTextFromResponse(String responseBody) throws Exception {
-        // 解析 {"content": [{"type": "text", "text": "..."}]}
-        Map<String, Object> resp = objectMapper.readValue(responseBody, Map.class);
-        List<Map<String, Object>> content = (List<Map<String, Object>>) resp.get("content");
-        if (content != null && !content.isEmpty()) {
-            for (Map<String, Object> item : content) {
-                if ("text".equals(item.get("type"))) {
-                    return (String) item.get("text");
-                }
-            }
-        }
-        throw new RuntimeException("无法从AI响应中提取文本");
     }
 
     @GetMapping("/vision-status")
     public ResponseEntity<Map<String, Object>> getVisionStatus() {
         Map<String, Object> result = new HashMap<>();
         result.put("supported", true);
-        result.put("ocr", "Tesseract OCR (chi_sim+eng)");
-        result.put("ai", "MiniMax-M2.7");
-        result.put("message", "本地OCR识别 + AI结构化");
+        result.put("ocr", "Vision AI (直接使用视觉模型识别)");
+        result.put("ai", "LangChain4j + 视觉模型");
+        result.put("message", "直接使用视觉模型识别图片 + AI结构化");
+        result.put("configSource", "t_api_key 表");
         return ResponseEntity.ok(result);
     }
 }
