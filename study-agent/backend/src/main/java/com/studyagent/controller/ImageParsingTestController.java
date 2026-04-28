@@ -5,6 +5,8 @@ import com.studyagent.dto.ExamParseResult;
 import com.studyagent.service.BaiduOcrService;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
+import dev.langchain4j.model.chat.StreamingChatResponseHandler;
+import dev.langchain4j.model.output.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -180,55 +182,60 @@ public class ImageParsingTestController {
 
         log.info("Stream: Sending to AI: prompt length={}", prompt.length());
 
-        streamingChatModel.chat(prompt,
-                token -> {
-                    try {
-                        fullResponse.append(token);
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("token", token);
-                        data.put("fullText", fullResponse.toString());
-                        emitter.send(SseEmitter.event().name("token").data(objectMapper.writeValueAsString(data)));
-                    } catch (IOException e) {
-                        log.error("Stream: Error sending token: {}", e.getMessage());
-                    }
-                },
-                response -> {
-                    try {
-                        String finalResponse = fullResponse.toString();
-                        log.info("Stream: AI response completed, length={}", finalResponse.length());
-                        String structuredJson = extractJson(finalResponse);
-
-                        Map<String, Object> result = new HashMap<>();
-                        result.put("success", true);
-                        result.put("fullText", finalResponse);
-                        result.put("structuredJson", structuredJson);
-
-                        try {
-                            ExamParseResult examResult = objectMapper.readValue(structuredJson, ExamParseResult.class);
-                            result.put("examResult", examResult);
-                        } catch (Exception e) {
-                            log.warn("Stream: Failed to parse exam result: {}", e.getMessage());
-                        }
-
-                        emitter.send(SseEmitter.event().name("complete").data(objectMapper.writeValueAsString(result)));
-                        emitter.complete();
-                    } catch (IOException e) {
-                        log.error("Stream: Error completing response: {}", e.getMessage());
-                        emitter.completeWithError(e);
-                    }
-                },
-                error -> {
-                    log.error("Stream: AI chat error", error);
-                    try {
-                        Map<String, Object> err = new HashMap<>();
-                        err.put("success", false);
-                        err.put("error", error.getClass().getName() + ": " + error.getMessage());
-                        emitter.send(SseEmitter.event().name("error").data(objectMapper.writeValueAsString(err)));
-                    } catch (IOException ignored) {
-                    }
-                    emitter.completeWithError(error);
+        streamingChatModel.chat(prompt, new StreamingChatResponseHandler() {
+            @Override
+            public void onPartialResponse(String partialResponse) {
+                try {
+                    fullResponse.append(partialResponse);
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("token", partialResponse);
+                    data.put("fullText", fullResponse.toString());
+                    emitter.send(SseEmitter.event().name("token").data(objectMapper.writeValueAsString(data)));
+                } catch (IOException e) {
+                    log.error("Stream: Error sending token: {}", e.getMessage());
                 }
-        );
+            }
+
+            @Override
+            public void onCompleteResponse(ChatResponse completeResponse) {
+                try {
+                    String finalResponse = fullResponse.toString();
+                    log.info("Stream: AI response completed, length={}", finalResponse.length());
+                    String structuredJson = extractJson(finalResponse);
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("success", true);
+                    result.put("fullText", finalResponse);
+                    result.put("structuredJson", structuredJson);
+
+                    try {
+                        ExamParseResult examResult = objectMapper.readValue(structuredJson, ExamParseResult.class);
+                        result.put("examResult", examResult);
+                    } catch (Exception e) {
+                        log.warn("Stream: Failed to parse exam result: {}", e.getMessage());
+                    }
+
+                    emitter.send(SseEmitter.event().name("complete").data(objectMapper.writeValueAsString(result)));
+                    emitter.complete();
+                } catch (IOException e) {
+                    log.error("Stream: Error completing response: {}", e.getMessage());
+                    emitter.completeWithError(e);
+                }
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                log.error("Stream: AI chat error", error);
+                try {
+                    Map<String, Object> err = new HashMap<>();
+                    err.put("success", false);
+                    err.put("error", error.getClass().getName() + ": " + error.getMessage());
+                    emitter.send(SseEmitter.event().name("error").data(objectMapper.writeValueAsString(err)));
+                } catch (IOException ignored) {
+                }
+                emitter.completeWithError(error);
+            }
+        });
     }
 
     @GetMapping("/vision-status")
