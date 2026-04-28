@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
+
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
@@ -31,6 +33,7 @@ public class LangChain4jConfig {
                 .modelName(modelName)
                 .temperature(0.7)
                 .maxTokens(50000)
+                .timeout(Duration.ofMinutes(5))
                 .build();
     }
 }
