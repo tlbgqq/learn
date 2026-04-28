@@ -75,6 +75,7 @@ public class ImageParsingTestController {
                 "      \"questionNo\": 1,\n" +
                 "      \"questionContent\": \"题目内容\",\n" +
                 "      \"studentAnswer\": \"学生答案\",\n" +
+                "      \"options\": \"选择题的选项\",\n" +
                 "      \"correctAnswer\": \"正确答案\",\n" +
                 "      \"isCorrect\": true/false,\n" +
                 "      \"knowledgePoints\": [\"知识点1\", \"知识点2\"]\n" +
@@ -110,5 +111,29 @@ public class ImageParsingTestController {
         result.put("ai", "MiniMax-M2.7 (via LangChain4j)");
         result.put("message", "百度OCR识别 + AI结构化");
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/ai-test")
+    public ResponseEntity<Map<String, Object>> testAiConnection() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            log.info("Testing AI connection...");
+            String testPrompt = "请回复'连接成功'四个字，不要回复其他内容。";
+            String response = chatModel.chat(testPrompt);
+            log.info("AI test response: {}", response);
+
+            result.put("success", true);
+            result.put("message", "AI接口连接正常");
+            result.put("response", response);
+            result.put("timestamp", System.currentTimeMillis());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("AI connection test failed", e);
+            result.put("success", false);
+            result.put("message", "AI接口连接失败");
+            result.put("error", e.getClass().getName() + ": " + e.getMessage());
+            result.put("cause", e.getCause() != null ? e.getCause().getMessage() : "unknown");
+            return ResponseEntity.status(500).body(result);
+        }
     }
 }
