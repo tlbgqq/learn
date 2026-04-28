@@ -160,7 +160,7 @@ public class ImageParsingTestController {
     }
 
     private void sendToAiStream(String ocrText, SseEmitter emitter, StringBuilder fullResponse) {
-        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。\n" +
+        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。忽略涉及图片的题。\n" +
                 "JSON格式：\n" +
                 "{\n" +
                 "  \"studentName\": \"学生姓名\",\n" +
