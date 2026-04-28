@@ -3,7 +3,7 @@ package com.studyagent.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.dto.ExamParseResult;
 import com.studyagent.service.ApiKeyService;
-import com.studyagent.service.OcrService;
+import com.studyagent.service.BaiduOcrService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -26,7 +26,7 @@ import java.util.Map;
 @CrossOrigin
 public class ImageParsingTestController {
 
-    private final OcrService ocrService;
+    private final BaiduOcrService baiduOcrService;
     private final ApiKeyService apiKeyService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -40,9 +40,9 @@ public class ImageParsingTestController {
                     image.getSize(),
                     image.getContentType());
 
-            // 1. OCR 识别图片文字
-            log.info("Step 1: OCR recognition...");
-            String ocrText = ocrService.recognizeText(image);
+            // 1. OCR 识别图片文字（使用百度 OCR）
+            log.info("Step 1: OCR recognition using Baidu OCR...");
+            String ocrText = baiduOcrService.recognizeText(image);
             log.info("OCR result length: {}, content preview: {}",
                     ocrText.length(), ocrText);
 
@@ -150,9 +150,9 @@ public class ImageParsingTestController {
     public ResponseEntity<Map<String, Object>> getVisionStatus() {
         Map<String, Object> result = new HashMap<>();
         result.put("supported", true);
-        result.put("ocr", "Tesseract OCR (chi_sim+eng)");
+        result.put("ocr", "Baidu OCR API (general_basic)");
         result.put("ai", "MiniMax-M2.7");
-        result.put("message", "本地OCR识别 + AI结构化");
+        result.put("message", "百度OCR识别 + AI结构化");
         return ResponseEntity.ok(result);
     }
 }
