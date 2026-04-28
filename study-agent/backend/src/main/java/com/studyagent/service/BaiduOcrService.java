@@ -15,19 +15,26 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class BaiduOcrService {
 
+    private static final String PROVIDER_NAME = "baidu-ocr";
+
     private final OkHttpClient httpClient = new OkHttpClient().newBuilder()
             .readTimeout(300, TimeUnit.SECONDS)
             .build();
-    @Value("${baidu.ocr.api-key}")
-    private String apiKey;
-    @Value("${baidu.ocr.secret-key}")
-    private String secretKey;
+
+    private final ApiKeyService apiKeyService;
+
     @Value("${baidu.ocr.token-url}")
     private String tokenUrl;
+
     @Value("${baidu.ocr.ocr-url}")
     private String ocrUrl;
+
     private String accessToken;
     private long tokenExpireTime;
+
+    public BaiduOcrService(ApiKeyService apiKeyService) {
+        this.apiKeyService = apiKeyService;
+    }
 
     public String recognizeText(MultipartFile image) {
         try {
@@ -98,6 +105,11 @@ public class BaiduOcrService {
         }
 
         log.info("Requesting new access token from Baidu...");
+
+        String apiKey = apiKeyService.getApiKeyValue(PROVIDER_NAME)
+                .orElseThrow(() -> new IllegalStateException("API key not found for provider: " + PROVIDER_NAME));
+        String secretKey = apiKeyService.getBaiduOcrSecretKey(PROVIDER_NAME)
+                .orElseThrow(() -> new IllegalStateException("Secret key not found for provider: " + PROVIDER_NAME));
 
         MediaType mediaType = MediaType.parse("application/x-www-form-urlencoded");
         RequestBody body = RequestBody.create(mediaType,

@@ -37,7 +37,5 @@ logging:
 
 baidu:
   ocr:
-    api-key: a0aHO1****7X86vI
-    secret-key: vRuqGk****VufpyM
     token-url: https://aip.baidubce.com/oauth/2.0/token
-    ocr-url: https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic
+    ocr-url: https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic

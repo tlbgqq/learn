@@ -53,6 +53,10 @@ public class ApiKeyService {
         return getApiKey(provider).map(ApiKey::getApiKey);
     }
 
+    public Optional<String> getBaiduOcrSecretKey(String provider) {
+        return getApiKey(provider).map(ApiKey::getBaiduOcrSecretKey);
+    }
+
     public Optional<String> getBaseUrl(String provider) {
         return getApiKey(provider).map(ApiKey::getBaseUrl);
     }

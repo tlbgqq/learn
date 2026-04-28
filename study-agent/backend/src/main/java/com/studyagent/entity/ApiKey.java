@@ -13,6 +13,7 @@ public class ApiKey {
 
     private String provider;
     private String apiKey;
+    private String baiduOcrSecretKey;
     private String baseUrl;
     private String modelName;
     private Boolean enabled = true;
