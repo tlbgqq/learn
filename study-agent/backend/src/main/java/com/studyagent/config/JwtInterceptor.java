@@ -33,6 +33,11 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 测试接口不需要验证
+        if (path.startsWith("/api/test/")) {
+            return true;
+        }
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);

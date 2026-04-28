@@ -12,7 +12,10 @@
       "Bash(npm run:*)",
       "mcp__playwright__browser_wait_for",
       "Bash(dir)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "mcp__context7__query-docs",
+      "WebSearch",
+      "WebFetch(domain:www.minimaxi.com)"
     ]
   }
 }
