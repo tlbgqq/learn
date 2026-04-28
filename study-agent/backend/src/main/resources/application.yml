@@ -34,3 +34,8 @@ logging:
   level:
     com.studyagent: INFO
     dev.langchain4j: DEBUG
+
+baidu:
+  ocr:
+    token-url: https://aip.baidubce.com/oauth/2.0/token
+    ocr-url: https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic

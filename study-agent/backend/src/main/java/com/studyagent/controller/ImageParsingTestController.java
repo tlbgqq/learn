@@ -2,11 +2,8 @@ package com.studyagent.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studyagent.dto.ExamParseResult;
-import dev.langchain4j.data.message.ImageContent;
-import dev.langchain4j.data.message.TextContent;
-import dev.langchain4j.data.message.UserMessage;
+import com.studyagent.service.BaiduOcrService;
 import dev.langchain4j.model.chat.ChatModel;
-import dev.langchain4j.model.chat.response.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -14,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +21,7 @@ import java.util.Map;
 @CrossOrigin
 public class ImageParsingTestController {
 
+    private final BaiduOcrService baiduOcrService;
     private final ChatModel chatModel;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -38,22 +35,19 @@ public class ImageParsingTestController {
                     image.getSize(),
                     image.getContentType());
 
-            // 1. 将图片转换为 Base64 编码
-            log.info("Step 1: Convert image to Base64...");
-            String base64Image = Base64.getEncoder().encodeToString(image.getBytes());
-            String mimeType = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-            log.info("Image converted to Base64, length: {}", base64Image.length());
+            log.info("Step 1: OCR recognition using Baidu OCR...");
+            String ocrText = baiduOcrService.recognizeText(image);
+            log.info("OCR result length: {}, content preview: {}",
+                    ocrText.length(), ocrText);
 
-            // 2. 使用 langchain4j 直接调用大模型进行图像识别和结构化
-            log.info("Step 2: Send image to AI for vision recognition and structuring...");
-            String structuredJson = sendImageToAi(base64Image, mimeType);
+            log.info("Step 2: Send to AI for structuring...");
+            String structuredJson = sendToAi(ocrText);
 
-            // 3. 解析 JSON 结果
             log.info("Step 3: Parse AI response...");
             ExamParseResult examResult = objectMapper.readValue(structuredJson, ExamParseResult.class);
 
             result.put("success", true);
-            result.put("ocrText", "Vision AI 直接识别（使用视觉模型");
+            result.put("ocrText", ocrText);
             result.put("examResult", examResult);
             result.put("imageSize", image.getSize());
             result.put("imageName", image.getOriginalFilename());
@@ -69,8 +63,8 @@ public class ImageParsingTestController {
         }
     }
 
-    private String sendImageToAi(String base64Image, String mimeType) throws Exception {
-        String prompt = "请分析这张试卷图片，提取信息并以JSON格式返回。\n" +
+    private String sendToAi(String ocrText) {
+        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。\n" +
                 "JSON格式：\n" +
                 "{\n" +
                 "  \"studentName\": \"学生姓名\",\n" +
@@ -87,30 +81,34 @@ public class ImageParsingTestController {
                 "    }\n" +
                 "  ]\n" +
                 "}\n\n" +
-                "请直接返回JSON格式的结果，不要包含任何其他说明文字。";
+                "OCR识别内容：\n" + ocrText;
 
-        UserMessage userMessage = UserMessage.from(
-                ImageContent.from(base64Image, mimeType),
-                TextContent.from(prompt)
-        );
+        log.info("Sending to AI: prompt length={}", prompt.length());
+        String response = chatModel.chat(prompt);
+        log.info("AI response: {}", response);
 
-        log.info("Sending image to AI: using ChatModel (langchain4j)");
-        ChatResponse response = chatModel.chat(userMessage);
+        return extractJson(response);
+    }
 
-        String aiText = response.aiMessage().text();
-        log.info("AI response: {}", aiText);
-
-        return aiText;
+    private String extractJson(String response) {
+        if (response == null) {
+            return "{}";
+        }
+        int start = response.indexOf("{");
+        int end = response.lastIndexOf("}");
+        if (start >= 0 && end > start) {
+            return response.substring(start, end + 1);
+        }
+        return response;
     }
 
     @GetMapping("/vision-status")
     public ResponseEntity<Map<String, Object>> getVisionStatus() {
         Map<String, Object> result = new HashMap<>();
         result.put("supported", true);
-        result.put("ocr", "Vision AI (直接使用视觉模型识别)");
-        result.put("ai", "LangChain4j + 视觉模型");
-        result.put("message", "直接使用视觉模型识别图片 + AI结构化");
-        result.put("configSource", "t_api_key 表");
+        result.put("ocr", "Baidu OCR API (general_basic)");
+        result.put("ai", "MiniMax-M2.7 (via LangChain4j)");
+        result.put("message", "百度OCR识别 + AI结构化");
         return ResponseEntity.ok(result);
     }
 }
