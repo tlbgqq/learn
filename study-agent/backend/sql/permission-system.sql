@@ -162,7 +162,7 @@ SELECT 2, id FROM sys_menu WHERE del = 0 AND (
 
 -- 先插入用户，然后分配超级管理员角色
 INSERT INTO sys_user (username, password, status) VALUES 
-('admin', 'c93d73649a777c4e94d1c9e7e3a8b5d', 1);
+('admin', '86bbc78667545f9e18ab49cfe644b18d', 1);
 
 -- 为admin用户分配超级管理员角色
 INSERT INTO sys_user_role (user_id, role_id) VALUES 
