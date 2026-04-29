@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.studyagent.mapper.SysMenuMapper">
+
+    <select id="selectMenusByRoleId" resultType="com.studyagent.entity.SysMenu">
+        SELECT m.* 
+        FROM sys_menu m 
+        INNER JOIN sys_role_menu rm ON m.id = rm.menu_id 
+        WHERE rm.role_id = #{roleId} AND m.del = 0 AND m.is_enable = 1
+        ORDER BY m.parent_id, m.sort
+    </select>
+
+    <select id="selectMenusByUserId" resultType="com.studyagent.entity.SysMenu">
+        SELECT DISTINCT m.* 
+        FROM sys_menu m 
+        INNER JOIN sys_role_menu rm ON m.id = rm.menu_id 
+        INNER JOIN sys_user_role ur ON rm.role_id = ur.role_id 
+        WHERE ur.user_id = #{userId} AND m.del = 0 AND m.is_enable = 1
+        ORDER BY m.parent_id, m.sort
+    </select>
+
+    <select id="selectMenuIdsByRoleId" resultType="java.lang.Long">
+        SELECT menu_id FROM sys_role_menu WHERE role_id = #{roleId}
+    </select>
+
+    <select id="selectChildrenIdsByParentId" resultType="java.lang.Long">
+        SELECT id FROM sys_menu WHERE parent_id = #{parentId} AND del = 0
+    </select>
+
+    <select id="selectRoleMenuCountByMenuId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM sys_role_menu WHERE menu_id = #{menuId}
+    </select>
+
+    <delete id="deleteRoleMenusByMenuId">
+        DELETE FROM sys_role_menu WHERE menu_id = #{menuId}
+    </delete>
+
+</mapper>
