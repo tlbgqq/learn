@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {ArrowDown, Avatar, HomeFilled, Menu, Setting, User, UserFilled} from '@element-plus/icons-vue'
@@ -104,6 +104,11 @@ import {userApi} from '@/api/admin'
 const route = useRoute()
 const router = useRouter()
 const adminStore = useAdminStore()
+
+onMounted(async () => {
+  await adminStore.getUserInfo()
+  await adminStore.getMenuList()
+})
 
 const isCollapse = ref(false)
 const activeMenu = computed(() => route.path)
