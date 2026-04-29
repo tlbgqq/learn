@@ -383,12 +383,12 @@ CREATE TABLE sys_user (
     create_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     modify_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (id),
-    UNIQUE KEY uk_username (username),
-    KEY idx_status (status),
-    KEY idx_create_time (create_time)
+    UNIQUE KEY uk_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- 创建索引的语句单独写
+CREATE INDEX idx_sys_user_status ON sys_user(status);
+CREATE INDEX idx_sys_user_create_time ON sys_user(create_time);
 CREATE INDEX idx_sys_user_del ON sys_user(del);
 ```
 
@@ -407,12 +407,12 @@ CREATE TABLE sys_role (
     create_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     modify_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
     PRIMARY KEY (id),
-    UNIQUE KEY uk_code (code),
-    KEY idx_status (status),
-    KEY idx_del (del)
+    UNIQUE KEY uk_code (code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色表';
 
 -- 创建索引的语句单独写
+CREATE INDEX idx_sys_role_status ON sys_role(status);
+CREATE INDEX idx_sys_role_del ON sys_role(del);
 CREATE INDEX idx_sys_role_sort ON sys_role(sort);
 ```
 
@@ -434,15 +434,14 @@ CREATE TABLE sys_menu (
     del             TINYINT(1)      NOT NULL DEFAULT 0 COMMENT '删除标记: 0-否, 1-是',
     create_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     modify_time     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
-    PRIMARY KEY (id),
-    KEY idx_parent_id (parent_id),
-    KEY idx_type (type),
-    KEY idx_sort (sort),
-    KEY idx_del (del)
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='菜单表';
 
 -- 创建索引的语句单独写
-CREATE INDEX idx_sys_menu_parent ON sys_menu(parent_id);
+CREATE INDEX idx_sys_menu_parent_id ON sys_menu(parent_id);
+CREATE INDEX idx_sys_menu_type ON sys_menu(type);
+CREATE INDEX idx_sys_menu_sort ON sys_menu(sort);
+CREATE INDEX idx_sys_menu_del ON sys_menu(del);
 CREATE INDEX idx_sys_menu_path ON sys_menu(path);
 CREATE INDEX idx_sys_menu_permission ON sys_menu(permission);
 ```
@@ -461,8 +460,8 @@ CREATE TABLE sys_user_role (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户角色关联表';
 
 -- 创建索引的语句单独写
-CREATE INDEX idx_sys_user_role_user ON sys_user_role(user_id);
-CREATE INDEX idx_sys_user_role_role ON sys_user_role(role_id);
+CREATE INDEX idx_sys_user_role_user_id ON sys_user_role(user_id);
+CREATE INDEX idx_sys_user_role_role_id ON sys_user_role(role_id);
 ```
 
 ### 4.6 角色菜单关联表 (sys_role_menu)
@@ -479,8 +478,8 @@ CREATE TABLE sys_role_menu (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色菜单关联表';
 
 -- 创建索引的语句单独写
-CREATE INDEX idx_sys_role_menu_role ON sys_role_menu(role_id);
-CREATE INDEX idx_sys_role_menu_menu ON sys_role_menu(menu_id);
+CREATE INDEX idx_sys_role_menu_role_id ON sys_role_menu(role_id);
+CREATE INDEX idx_sys_role_menu_menu_id ON sys_role_menu(menu_id);
 ```
 
 ---
