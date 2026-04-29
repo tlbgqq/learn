@@ -35,7 +35,6 @@ logging:
     com.studyagent: INFO
     dev.langchain4j: DEBUG
 
-baidu:
-  ocr:
-    token-url: https://aip.baidubce.com/oauth/2.0/token
-    ocr-url: https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic
+ollama:
+  api-url: http://localhost:11434/api/generate
+  model: glm-ocr:latest
