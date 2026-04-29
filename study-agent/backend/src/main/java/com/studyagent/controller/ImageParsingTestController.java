@@ -5,8 +5,8 @@ import com.studyagent.dto.ExamParseResult;
 import com.studyagent.service.BaiduOcrService;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.StreamingChatModel;
-import dev.langchain4j.model.chat.StreamingChatResponseHandler;
-import dev.langchain4j.model.output.ChatResponse;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -160,7 +160,7 @@ public class ImageParsingTestController {
     }
 
     private void sendToAiStream(String ocrText, SseEmitter emitter, StringBuilder fullResponse) {
-        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。\n" +
+        String prompt = "请分析以下OCR识别的试卷内容，提取信息并以JSON格式返回。忽略涉及图片的题。\n" +
                 "JSON格式：\n" +
                 "{\n" +
                 "  \"studentName\": \"学生姓名\",\n" +

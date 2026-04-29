@@ -15,6 +15,8 @@ public class ExamParseResult {
     public static class QuestionAnswer {
         private int questionNo;
         private String questionContent;
+
+        private String options;
         private String studentAnswer;
         private String correctAnswer;
         private boolean isCorrect;
