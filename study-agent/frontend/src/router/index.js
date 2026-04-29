@@ -62,7 +62,7 @@ const routes = [
     path: '/admin/login',
     name: 'AdminLogin',
     component: () => import('@/views/admin/Login.vue'),
-    meta: { requiresAdminAuth: false }
+    meta: { requiresAuth: false, requiresAdminAuth: false }
   },
   {
     path: '/admin',
@@ -106,13 +106,13 @@ router.beforeEach((to, from, next) => {
   const isStudentAuthenticated = localStorage.getItem('token')
   const isAdminAuthenticated = localStorage.getItem('admin_token')
   
-  if (to.matched.some(record => record.meta.requiresAdminAuth)) {
+  if (to.matched.some(record => record.meta.requiresAdminAuth === true)) {
     if (!isAdminAuthenticated) {
       next({ name: 'AdminLogin' })
     } else {
       next()
     }
-  } else if (to.matched.some(record => record.meta.requiresAuth !== false)) {
+  } else if (to.matched.some(record => record.meta.requiresAuth === true)) {
     if (!isStudentAuthenticated) {
       next({ name: 'Login' })
     } else {
