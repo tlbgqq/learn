@@ -37,9 +37,33 @@ public class BaiduOcrService {
 
             String imageBase64 = Base64.getEncoder().encodeToString(image.getBytes());
 
+            String prompt = "请分析以下图片中的试卷内容，提取信息并以JSON格式返回。\n" +
+                    "JSON格式：\n" +
+                    "{\n" +
+                    "  \"studentName\": \"学生姓名\",\n" +
+                    "  \"studentId\": \"学号\",\n" +
+                    "  \"teacherName\": \"老师姓名\",\n" +
+                    "  \"questions\": [\n" +
+                    "    {\n" +
+                    "      \"questionNo\": 1,\n" +
+                    "      \"questionContent\": \"题目内容\",\n" +
+                    "      \"studentAnswer\": \"学生答案\",\n" +
+                    "      \"options\": \"选择题的选项\",\n" +
+                    "      \"correctAnswer\": \"正确答案\",\n" +
+                    "      \"isCorrect\": true/false,\n" +
+                    "      \"knowledgePoints\": [\"知识点1\", \"知识点2\"]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}\n\n" +
+                    "要求：\n" +
+                    "1. 只返回JSON格式的结果，不要包含任何其他内容\n" +
+                    "2. 如果某些字段无法提取，请留空字符串或null\n" +
+                    "3. 对于isCorrect字段，如果无法判断，请设置为null\n" +
+                    "4. 忽略涉及图片的题目";
+
             JSONObject requestBody = new JSONObject();
             requestBody.put("model", ollamaModel);
-            requestBody.put("prompt", "识别图片中的文本");
+            requestBody.put("prompt", prompt);
             requestBody.put("images", new java.util.ArrayList<>(java.util.Arrays.asList(imageBase64)));
             requestBody.put("stream", false);
 
