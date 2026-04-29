@@ -3,7 +3,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/admin/login'
   },
   {
     path: '/login',
@@ -57,6 +57,43 @@ const routes = [
         component: () => import('@/views/student/SprintIndex.vue')
       }
     ]
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: () => import('@/views/admin/Login.vue'),
+    meta: { requiresAdminAuth: false }
+  },
+  {
+    path: '/admin',
+    component: () => import('@/views/admin/Layout.vue'),
+    meta: { requiresAdminAuth: true },
+    children: [
+      {
+        path: '',
+        redirect: '/admin/dashboard'
+      },
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: () => import('@/views/admin/Dashboard.vue')
+      },
+      {
+        path: 'user',
+        name: 'UserManage',
+        component: () => import('@/views/admin/system/user/index.vue')
+      },
+      {
+        path: 'role',
+        name: 'RoleManage',
+        component: () => import('@/views/admin/system/role/index.vue')
+      },
+      {
+        path: 'menu',
+        name: 'MenuManage',
+        component: () => import('@/views/admin/system/menu/index.vue')
+      }
+    ]
   }
 ]
 
@@ -66,17 +103,26 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('token')
+  const isStudentAuthenticated = localStorage.getItem('token')
+  const isAdminAuthenticated = localStorage.getItem('admin_token')
   
-  if (to.matched.some(record => record.meta.requiresAuth !== false)) {
-    if (!isAuthenticated) {
+  if (to.matched.some(record => record.meta.requiresAdminAuth)) {
+    if (!isAdminAuthenticated) {
+      next({ name: 'AdminLogin' })
+    } else {
+      next()
+    }
+  } else if (to.matched.some(record => record.meta.requiresAuth !== false)) {
+    if (!isStudentAuthenticated) {
       next({ name: 'Login' })
     } else {
       next()
     }
   } else {
-    if (isAuthenticated && (to.name === 'Login' || to.name === 'Register')) {
+    if (isStudentAuthenticated && (to.name === 'Login' || to.name === 'Register')) {
       next({ name: 'StudentHome' })
+    } else if (isAdminAuthenticated && to.name === 'AdminLogin') {
+      next({ name: 'AdminDashboard' })
     } else {
       next()
     }
