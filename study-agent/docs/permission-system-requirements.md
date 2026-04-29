@@ -261,12 +261,10 @@
 | 菜单名称 | String | 菜单显示名称 |
 | 菜单图标 | String | 图标名称或路径 |
 | 菜单类型 | Enum | 目录/菜单/按钮 |
-| 路由名称 | String | Vue Router 的 name |
 | 路由路径 | String | 访问路径 |
-| 组件路径 | String | Vue 组件路径 |
 | 排序号 | Integer | 同级菜单排序 |
 | 状态 | Enum | 显示/隐藏/禁用 |
-| 权限标识 | String | 按钮级别权限标识 |
+| 权限标识 | String | 按钮级别权限标识（仅按钮类型） |
 | 创建时间 | DateTime | 创建时间 |
 | 操作 | Action | 新增子级/编辑/删除 |
 
@@ -291,7 +289,7 @@
 | 类型 | 额外必填字段 |
 |------|-------------|
 | 目录 | 菜单图标、排序号 |
-| 菜单 | 路由名称、路由路径、组件路径、菜单图标、排序号 |
+| 菜单 | 路由路径、菜单图标、排序号 |
 | 按钮 | 权限标识、所属菜单 |
 
 **可选字段**：
@@ -346,15 +344,15 @@
 │ password        │     │ menu_id (FK)    │     │ parent_id       │
 │ status          │     └────────┬────────┘     │ type            │
 │ del             │              │              │ path            │
-│ create_time     │     ┌────────┴────────┐     │ component       │
-│ modify_time     │     │    sys_role     │     │ icon            │
-└────────┬────────┘     ├─────────────────┤     │ sort            │
-         │               │ id (PK)         │     │ permission      │
-         │               │ code            │     │ status          │
-         │               │ name            │     │ del             │
-         │               │ sort            │     │ create_time     │
-         │               │ status          │     │ modify_time     │
-         │               │ description     │     └─────────────────┘
+│ create_time     │     ┌────────┴────────┐     │ icon            │
+│ modify_time     │     │    sys_role     │     │ sort            │
+└────────┬────────┘     ├─────────────────┤     │ permission      │
+         │               │ id (PK)         │     │ status          │
+         │               │ code            │     │ del             │
+         │               │ name            │     │ create_time     │
+         │               │ sort            │     │ modify_time     │
+         │               │ status          │     └─────────────────┘
+         │               │ description     │
          │               │ del             │
          │               │ create_time     │
          │               │ modify_time     │
@@ -428,12 +426,9 @@ CREATE TABLE sys_menu (
     name            VARCHAR(50)     NOT NULL COMMENT '菜单名称',
     type            TINYINT(1)      NOT NULL COMMENT '菜单类型: 1-目录, 2-菜单, 3-按钮',
     path            VARCHAR(200)    DEFAULT NULL COMMENT '路由路径',
-    component       VARCHAR(255)    DEFAULT NULL COMMENT '组件路径',
-    redirect        VARCHAR(255)    DEFAULT NULL COMMENT '重定向路径',
     icon            VARCHAR(50)     DEFAULT NULL COMMENT '菜单图标',
     sort            INT             DEFAULT 0 COMMENT '排序号',
     permission      VARCHAR(100)    DEFAULT NULL COMMENT '权限标识',
-    keep_alive      TINYINT(1)      DEFAULT 1 COMMENT '是否缓存: 0-否, 1-是',
     is_show         TINYINT(1)      DEFAULT 1 COMMENT '是否显示: 0-否, 1-是',
     is_enable       TINYINT(1)      DEFAULT 1 COMMENT '是否启用: 0-否, 1-是',
     del             TINYINT(1)      DEFAULT 0 COMMENT '删除标记: 0-否, 1-是',
@@ -702,6 +697,8 @@ public List<MenuVO> buildTree(List<Menu> menus, Long parentId) {
 | menu_show | 1 | 显示 |
 | menu_enable | 0 | 禁用 |
 | menu_enable | 1 | 启用 |
+| menu_keep_alive | 0 | 不缓存 |
+| menu_keep_alive | 1 | 缓存 |
 
 ### 8.2 默认数据
 
