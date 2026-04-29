@@ -38,3 +38,31 @@ export const menuApi = {
   delete: (id) => api.delete(`/system/menu/${id}`),
   updateSort: (data) => api.put('/system/menu/sort', data)
 }
+
+export const questionApi = {
+  list: (params) => api.get('/admin/question/list', { params }),
+  getById: (id) => api.get(`/admin/question/${id}`),
+  add: (data) => api.post('/admin/question', data),
+  update: (data) => api.put('/admin/question', data),
+  delete: (id) => api.delete(`/admin/question/${id}`),
+  batchDelete: (ids) => api.delete('/admin/question/batch', { data: { ids } }),
+  import: (file, onUploadProgress) => api.post('/admin/question/import', file, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress
+  }),
+  export: (params) => api.get('/admin/question/export', { 
+    params, 
+    responseType: 'blob' 
+  }),
+  getTemplate: () => api.get('/admin/question/template', { responseType: 'blob' })
+}
+
+export const knowledgePointApi = {
+  list: (params) => api.get('/admin/knowledge-point/list', { params }),
+  getTree: (params) => api.get('/admin/knowledge-point/tree', { params }),
+  getById: (id) => api.get(`/admin/knowledge-point/${id}`),
+  add: (data) => api.post('/admin/knowledge-point', data),
+  update: (data) => api.put('/admin/knowledge-point', data),
+  delete: (id) => api.delete(`/admin/knowledge-point/${id}`),
+  getSubjects: (params) => api.get('/admin/knowledge-point/subjects', { params })
+}

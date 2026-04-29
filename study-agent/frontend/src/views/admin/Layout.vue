@@ -18,6 +18,24 @@
           <el-icon><HomeFilled /></el-icon>
           <template #title>首页</template>
         </el-menu-item>
+        <el-sub-menu index="question">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>题库管理</span>
+          </template>
+          <el-menu-item index="/admin/question">
+            <el-icon><List /></el-icon>
+            <template #title>题目管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/question/add">
+            <el-icon><Plus /></el-icon>
+            <template #title>题目录入</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/knowledge-point">
+            <el-icon><Connection /></el-icon>
+            <template #title>知识点管理</template>
+          </el-menu-item>
+        </el-sub-menu>
         <el-sub-menu index="system">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -97,7 +115,19 @@
 import {computed, onMounted, ref} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {ArrowDown, Avatar, HomeFilled, Menu, Setting, User, UserFilled} from '@element-plus/icons-vue'
+import {
+  ArrowDown,
+  Avatar,
+  Connection,
+  Document,
+  HomeFilled,
+  List,
+  Menu,
+  Plus,
+  Setting,
+  User,
+  UserFilled
+} from '@element-plus/icons-vue'
 import {useAdminStore} from '@/store/admin'
 import {userApi} from '@/api/admin'
 

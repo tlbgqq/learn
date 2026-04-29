@@ -92,6 +92,30 @@ const routes = [
         path: 'menu',
         name: 'MenuManage',
         component: () => import('@/views/admin/system/menu/index.vue')
+      },
+      {
+        path: 'question',
+        name: 'QuestionList',
+        component: () => import('@/views/admin/question/index.vue'),
+        meta: { title: '题目管理' }
+      },
+      {
+        path: 'question/add',
+        name: 'QuestionAdd',
+        component: () => import('@/views/admin/question/form.vue'),
+        meta: { title: '题目录入' }
+      },
+      {
+        path: 'question/edit/:id',
+        name: 'QuestionEdit',
+        component: () => import('@/views/admin/question/form.vue'),
+        meta: { title: '编辑题目' }
+      },
+      {
+        path: 'knowledge-point',
+        name: 'KnowledgePointManage',
+        component: () => import('@/views/admin/knowledge-point/index.vue'),
+        meta: { title: '知识点管理' }
       }
     ]
   }
