@@ -19,7 +19,8 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 登录和注册接口不需要验证
         String path = request.getRequestURI();
-        if (path.contains("/api/student/login") || path.contains("/api/student/register")) {
+        if (path.contains("/api/student/login") || path.contains("/api/student/register")
+                || path.contains("/api/auth/login")) {
             return true;
         }
 
