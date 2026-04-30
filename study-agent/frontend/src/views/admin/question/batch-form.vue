@@ -293,7 +293,11 @@ const router = useRouter()
 const parentFormRef = ref(null)
 const childFormRefs = ref([])
 const loading = ref(false)
-const subjectList = ref([])
+const subjectList = ref([
+  { id: 1, name: '语文' },
+  { id: 2, name: '数学' },
+  { id: 3, name: '英语' }
+])
 const gradeList = ref([])
 const knowledgeTree = ref([])
 const parentSelectedKnowledgePoints = ref([])
@@ -400,17 +404,6 @@ const handleParentTypeChange = (val) => {
 const handleChildTypeChange = (index) => {
   if (childForms.value[index].type !== '选择') {
     childForms.value[index].options = ''
-  }
-}
-
-const fetchSubjects = async () => {
-  try {
-    const res = await knowledgePointApi.getSubjects()
-    if (res.success) {
-      subjectList.value = res.data
-    }
-  } catch (error) {
-    console.error('获取学科列表失败', error)
   }
 }
 
@@ -581,7 +574,6 @@ const handleBack = () => {
 }
 
 onMounted(() => {
-  fetchSubjects()
   fetchGrades()
 })
 </script>

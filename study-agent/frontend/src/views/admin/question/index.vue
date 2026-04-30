@@ -233,7 +233,11 @@ const importResult = ref(null)
 const uploadRef = ref(null)
 
 const tableData = ref([])
-const subjectList = ref([])
+const subjectList = ref([
+  { id: 1, name: '语文' },
+  { id: 2, name: '数学' },
+  { id: 3, name: '英语' }
+])
 const knowledgeTree = ref([])
 const selectedIds = ref([])
 
@@ -269,17 +273,6 @@ const formatTime = (time) => {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-const fetchSubjects = async () => {
-  try {
-    const res = await knowledgePointApi.getSubjects()
-    if (res.success) {
-      subjectList.value = res.data
-    }
-  } catch (error) {
-    console.error('获取学科列表失败', error)
-  }
 }
 
 const fetchKnowledgeTree = async (subjectId) => {
@@ -548,7 +541,6 @@ const goToKnowledgePoint = () => {
 }
 
 onMounted(() => {
-  fetchSubjects()
   fetchData()
 })
 </script>
