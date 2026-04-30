@@ -37,7 +37,7 @@ public class BaiduOcrService {
 
             String imageBase64 = Base64.getEncoder().encodeToString(image.getBytes());
 
-            String prompt = "请提取图片中的文字";
+            String prompt = "请提取图片中的文字，忽略手写体";
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("model", ollamaModel);

@@ -3,7 +3,7 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>{{ isEdit ? '编辑题目' : '新增题目' }}</span>
+          <span>{{ isEdit ? '编辑题目' : (form.parentId > 0 ? '新增子题目' : '新增题目') }}</span>
           <div>
             <el-button @click="handleBack">返回</el-button>
           </div>
@@ -17,6 +17,25 @@
         label-width="120px"
         style="max-width: 800px"
       >
+        <el-form-item label="所属父题目" prop="parentId">
+          <el-select
+            v-model="form.parentId"
+            :disabled="isEdit && currentParentId > 0"
+            clearable
+            placeholder="请选择父题目（不选则为主题目）"
+            style="width: 500px"
+          >
+            <el-option :value="0" label="无（作为主题目）" />
+            <el-option
+              v-for="parent in parentQuestionList"
+              :key="parent.id"
+              :label="`[${parent.id}] ${parent.content.length > 30 ? parent.content.substring(0, 30) + '...' : parent.content}`"
+              :value="parent.id"
+            />
+          </el-select>
+          <div class="form-tip">选择父题目后，此题将作为子题目存在</div>
+        </el-form-item>
+
         <el-form-item label="题目类型" prop="type">
           <el-radio-group v-model="form.type" @change="handleTypeChange">
             <el-radio value="选择">选择题</el-radio>
@@ -130,6 +149,8 @@ const loading = ref(false)
 const subjectList = ref([])
 const knowledgeTree = ref([])
 const selectedKnowledgePoints = ref([])
+const parentQuestionList = ref([])
+const currentParentId = ref(0)
 
 const isEdit = computed(() => route.path.includes('/edit/'))
 const questionId = computed(() => {
@@ -148,7 +169,8 @@ const form = reactive({
   analysis: '',
   subjectId: null,
   knowledgePointIds: '',
-  difficulty: 3
+  difficulty: 3,
+  parentId: 0
 })
 
 const rules = {
@@ -220,6 +242,25 @@ const handleSubjectChange = (val) => {
   selectedKnowledgePoints.value = []
   form.knowledgePointIds = ''
   fetchKnowledgeTree(val)
+  fetchParentQuestions(val)
+}
+
+const fetchParentQuestions = async (subjectId, excludeId = null) => {
+  try {
+    const params = {}
+    if (subjectId && subjectId > 0) {
+      params.subjectId = subjectId
+    }
+    if (excludeId && excludeId > 0) {
+      params.excludeId = excludeId
+    }
+    const res = await questionApi.getParents(params)
+    if (res.success) {
+      parentQuestionList.value = res.data
+    }
+  } catch (error) {
+    console.error('获取父题目列表失败', error)
+  }
 }
 
 const fetchQuestionDetail = async () => {
@@ -237,6 +278,8 @@ const fetchQuestionDetail = async () => {
       form.analysis = data.analysis || ''
       form.subjectId = data.subjectId
       form.difficulty = data.difficulty || 3
+      form.parentId = data.parentId || 0
+      currentParentId.value = data.parentId || 0
 
       if (data.knowledgePointIds) {
         const kpIds = data.knowledgePointIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
@@ -245,6 +288,7 @@ const fetchQuestionDetail = async () => {
 
       if (data.subjectId) {
         fetchKnowledgeTree(data.subjectId)
+        fetchParentQuestions(data.subjectId, data.id)
       }
     } else {
       ElMessage.error(res.message || '获取题目详情失败')
@@ -306,10 +350,14 @@ const handleReset = () => {
     form.options = ''
     form.answer = ''
     form.analysis = ''
-    form.subjectId = null
     form.difficulty = 3
     selectedKnowledgePoints.value = []
     form.knowledgePointIds = ''
+    
+    const queryParentId = route.query.parentId ? parseInt(route.query.parentId) : 0
+    const querySubjectId = route.query.subjectId ? parseInt(route.query.subjectId) : null
+    form.parentId = queryParentId || 0
+    form.subjectId = querySubjectId
   }
 }
 
@@ -319,8 +367,21 @@ const handleBack = () => {
 
 onMounted(() => {
   fetchSubjects()
+  
+  const queryParentId = route.query.parentId ? parseInt(route.query.parentId) : 0
+  const querySubjectId = route.query.subjectId ? parseInt(route.query.subjectId) : null
+  
   if (isEdit.value) {
     fetchQuestionDetail()
+  } else {
+    if (queryParentId > 0) {
+      form.parentId = queryParentId
+    }
+    if (querySubjectId > 0) {
+      form.subjectId = querySubjectId
+      fetchKnowledgeTree(querySubjectId)
+      fetchParentQuestions(querySubjectId)
+    }
   }
 })
 </script>
