@@ -133,6 +133,7 @@ public class AdminQuestionController {
                 for (QuestionBatchCreateRequest.QuestionDTO childDTO : request.getChildQuestions()) {
                     Question childQuestion = convertDTOToEntity(childDTO);
                     childQuestion.setParentId(parentQuestion.getId());
+                    childQuestion.setSubjectId(parentQuestion.getSubjectId());
                     childQuestion.setFrequency(0);
                     childQuestion.setCreateTime(LocalDateTime.now());
                     childQuestion.setModifyTime(LocalDateTime.now());
