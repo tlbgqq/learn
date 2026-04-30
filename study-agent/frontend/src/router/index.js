@@ -112,6 +112,12 @@ const routes = [
         meta: { title: '编辑题目' }
       },
       {
+        path: 'question/batch-add',
+        name: 'QuestionBatchAdd',
+        component: () => import('@/views/admin/question/batch-form.vue'),
+        meta: { title: '批量录入题目' }
+      },
+      {
         path: 'knowledge-point',
         name: 'KnowledgePointManage',
         component: () => import('@/views/admin/knowledge-point/index.vue'),

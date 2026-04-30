@@ -9,6 +9,10 @@
               <el-icon><Plus /></el-icon>
               新增题目
             </el-button>
+            <el-button type="warning" @click="handleBatchAdd">
+              <el-icon><DocumentAdd /></el-icon>
+              批量录入（父子题）
+            </el-button>
             <el-button type="success" @click="handleImport">
               <el-icon><Upload /></el-icon>
               批量导入
@@ -214,7 +218,7 @@
 import {onMounted, reactive, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage, ElMessageBox} from 'element-plus'
-import {Connection, Download, Plus, Upload} from '@element-plus/icons-vue'
+import {Connection, DocumentAdd, Download, Plus, Upload} from '@element-plus/icons-vue'
 import {knowledgePointApi, questionApi} from '@/api/admin'
 
 const router = useRouter()
@@ -381,6 +385,10 @@ const handleReset = () => {
 
 const handleAdd = () => {
   router.push('/admin/question/add')
+}
+
+const handleBatchAdd = () => {
+  router.push('/admin/question/batch-add')
 }
 
 const handleAddSubQuestion = (row) => {

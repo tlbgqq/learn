@@ -3,6 +3,8 @@ package com.studyagent.controller.admin;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.studyagent.dto.ApiResponse;
+import com.studyagent.dto.QuestionBatchCreateRequest;
+import com.studyagent.dto.QuestionBatchCreateResponse;
 import com.studyagent.entity.KnowledgePoint;
 import com.studyagent.entity.Question;
 import com.studyagent.entity.Subject;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,6 +110,60 @@ public class AdminQuestionController {
             log.error("新增题目失败", e);
             return ApiResponse.error("新增失败：" + e.getMessage());
         }
+    }
+
+    @PostMapping("/batch-create")
+    @Transactional
+    public ApiResponse<QuestionBatchCreateResponse> batchCreate(@RequestBody QuestionBatchCreateRequest request) {
+        try {
+            if (request.getParentQuestion() == null) {
+                return ApiResponse.error("父题目不能为空");
+            }
+
+            QuestionBatchCreateRequest.QuestionDTO parentDTO = request.getParentQuestion();
+            Question parentQuestion = convertDTOToEntity(parentDTO);
+            parentQuestion.setParentId(0L);
+            parentQuestion.setFrequency(0);
+            parentQuestion.setCreateTime(LocalDateTime.now());
+            parentQuestion.setModifyTime(LocalDateTime.now());
+            questionMapper.insert(parentQuestion);
+
+            List<Long> childIds = new ArrayList<>();
+            if (request.getChildQuestions() != null && !request.getChildQuestions().isEmpty()) {
+                for (QuestionBatchCreateRequest.QuestionDTO childDTO : request.getChildQuestions()) {
+                    Question childQuestion = convertDTOToEntity(childDTO);
+                    childQuestion.setParentId(parentQuestion.getId());
+                    childQuestion.setFrequency(0);
+                    childQuestion.setCreateTime(LocalDateTime.now());
+                    childQuestion.setModifyTime(LocalDateTime.now());
+                    questionMapper.insert(childQuestion);
+                    childIds.add(childQuestion.getId());
+                }
+            }
+
+            QuestionBatchCreateResponse response = new QuestionBatchCreateResponse();
+            response.setParentQuestionId(parentQuestion.getId());
+            response.setChildQuestionIds(childIds);
+            response.setTotalCreated(1 + childIds.size());
+
+            return ApiResponse.success("批量创建成功", response);
+        } catch (Exception e) {
+            log.error("批量创建题目失败", e);
+            return ApiResponse.error("批量创建失败：" + e.getMessage());
+        }
+    }
+
+    private Question convertDTOToEntity(QuestionBatchCreateRequest.QuestionDTO dto) {
+        Question question = new Question();
+        question.setType(dto.getType() != null ? dto.getType() : "");
+        question.setContent(dto.getContent() != null ? dto.getContent() : "");
+        question.setOptions(dto.getOptions() != null ? dto.getOptions() : "");
+        question.setAnswer(dto.getAnswer() != null ? dto.getAnswer() : "");
+        question.setAnalysis(dto.getAnalysis() != null ? dto.getAnalysis() : "");
+        question.setSubjectId(dto.getSubjectId() != null ? dto.getSubjectId() : 0L);
+        question.setKnowledgePointIds(dto.getKnowledgePointIds() != null ? dto.getKnowledgePointIds() : "");
+        question.setDifficulty(dto.getDifficulty() != null ? dto.getDifficulty() : 3);
+        return question;
     }
 
     @PutMapping

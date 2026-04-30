@@ -56,7 +56,8 @@ export const questionApi = {
   }),
   getTemplate: () => api.get('/admin/question/template', { responseType: 'blob' }),
   getParents: (params) => api.get('/admin/question/parents', { params }),
-  getChildren: (parentId) => api.get(`/admin/question/children/${parentId}`)
+  getChildren: (parentId) => api.get(`/admin/question/children/${parentId}`),
+  batchCreate: (data) => api.post('/admin/question/batch-create', data)
 }
 
 export const knowledgePointApi = {
