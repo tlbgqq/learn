@@ -202,9 +202,9 @@
             <el-form-item label="所属学科" prop="subjectId">
               <el-select
                 v-model="childForm.subjectId"
-                placeholder="请选择学科"
+                disabled
                 style="width: 250px"
-                @change="handleChildSubjectChange(index)"
+                placeholder="继承自父题目"
               >
                 <el-option
                   v-for="subject in subjectList"
@@ -213,6 +213,7 @@
                   :value="subject.id"
                 />
               </el-select>
+              <div class="form-tip">继承自父题目，不可修改</div>
             </el-form-item>
 
             <el-form-item label="关联知识点" prop="knowledgePointIds">
@@ -396,6 +397,13 @@ const handleParentSubjectChange = (val) => {
   parentSelectedKnowledgePoints.value = []
   parentForm.knowledgePointIds = ''
   fetchKnowledgeTree(val)
+  
+  childForms.value.forEach(child => {
+    child.subjectId = val
+    child.selectedKnowledgePoints = []
+    child.knowledgePointIds = ''
+    child.knowledgeTree = knowledgeTree.value
+  })
 }
 
 const handleChildSubjectChange = async (index) => {
