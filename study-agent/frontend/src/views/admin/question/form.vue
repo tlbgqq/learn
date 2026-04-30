@@ -161,7 +161,11 @@ const router = useRouter()
 
 const formRef = ref(null)
 const loading = ref(false)
-const subjectList = ref([])
+const subjectList = ref([
+  { id: 1, name: '语文' },
+  { id: 2, name: '数学' },
+  { id: 3, name: '英语' }
+])
 const gradeList = ref([])
 const knowledgeTree = ref([])
 const selectedKnowledgePoints = ref([])
@@ -226,17 +230,6 @@ watch(selectedKnowledgePoints, (newVal) => {
 const handleTypeChange = (val) => {
   if (val !== '选择') {
     form.options = ''
-  }
-}
-
-const fetchSubjects = async () => {
-  try {
-    const res = await knowledgePointApi.getSubjects()
-    if (res.success) {
-      subjectList.value = res.data
-    }
-  } catch (error) {
-    console.error('获取学科列表失败', error)
   }
 }
 
@@ -395,7 +388,6 @@ const handleBack = () => {
 }
 
 onMounted(() => {
-  fetchSubjects()
   fetchGrades()
   
   const queryParentId = route.query.parentId ? parseInt(route.query.parentId) : 0
