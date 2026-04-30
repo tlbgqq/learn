@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS t_question (
     answer TEXT NOT NULL DEFAULT '' COMMENT '正确答案',
     analysis TEXT NOT NULL DEFAULT '' COMMENT '题目解析',
     subject_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属学科ID',
+    grade_id BIGINT NOT NULL DEFAULT 0 COMMENT '所属年级ID',
     knowledge_point_ids TEXT NOT NULL DEFAULT '' COMMENT '关联知识点ID，多个用逗号分隔',
     difficulty INT NOT NULL DEFAULT 1 COMMENT '难度等级：1-5星',
     frequency INT NOT NULL DEFAULT 0 COMMENT '出题频率',
