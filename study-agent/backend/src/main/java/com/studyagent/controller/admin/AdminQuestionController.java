@@ -8,6 +8,7 @@ import com.studyagent.dto.QuestionBatchCreateResponse;
 import com.studyagent.entity.KnowledgePoint;
 import com.studyagent.entity.Question;
 import com.studyagent.entity.Subject;
+import com.studyagent.mapper.GradeMapper;
 import com.studyagent.mapper.KnowledgePointMapper;
 import com.studyagent.mapper.QuestionMapper;
 import com.studyagent.mapper.SubjectMapper;
@@ -40,6 +41,7 @@ public class AdminQuestionController {
     private final QuestionMapper questionMapper;
     private final SubjectMapper subjectMapper;
     private final KnowledgePointMapper knowledgePointMapper;
+    private final GradeMapper gradeMapper;
 
     @GetMapping("/list")
     public ApiResponse<Page<QuestionVO>> list(
@@ -134,6 +136,7 @@ public class AdminQuestionController {
                     Question childQuestion = convertDTOToEntity(childDTO);
                     childQuestion.setParentId(parentQuestion.getId());
                     childQuestion.setSubjectId(parentQuestion.getSubjectId());
+                    childQuestion.setGradeId(parentQuestion.getGradeId());
                     childQuestion.setFrequency(0);
                     childQuestion.setCreateTime(LocalDateTime.now());
                     childQuestion.setModifyTime(LocalDateTime.now());
@@ -162,6 +165,7 @@ public class AdminQuestionController {
         question.setAnswer(dto.getAnswer() != null ? dto.getAnswer() : "");
         question.setAnalysis(dto.getAnalysis() != null ? dto.getAnalysis() : "");
         question.setSubjectId(dto.getSubjectId() != null ? dto.getSubjectId() : 0L);
+        question.setGradeId(dto.getGradeId() != null ? dto.getGradeId() : 0L);
         question.setKnowledgePointIds(dto.getKnowledgePointIds() != null ? dto.getKnowledgePointIds() : "");
         question.setDifficulty(dto.getDifficulty() != null ? dto.getDifficulty() : 3);
         return question;
@@ -449,6 +453,7 @@ public class AdminQuestionController {
         vo.setAnswer(question.getAnswer());
         vo.setAnalysis(question.getAnalysis());
         vo.setSubjectId(question.getSubjectId());
+        vo.setGradeId(question.getGradeId());
         vo.setKnowledgePointIds(question.getKnowledgePointIds());
         vo.setDifficulty(question.getDifficulty());
         vo.setFrequency(question.getFrequency());
@@ -460,6 +465,13 @@ public class AdminQuestionController {
             Subject subject = subjectMapper.selectById(question.getSubjectId());
             if (subject != null) {
                 vo.setSubjectName(subject.getName());
+            }
+        }
+        
+        if (question.getGradeId() != null && question.getGradeId() > 0) {
+            com.studyagent.entity.Grade grade = gradeMapper.selectById(question.getGradeId());
+            if (grade != null) {
+                vo.setGradeName(grade.getName());
             }
         }
         
@@ -587,6 +599,8 @@ public class AdminQuestionController {
         private String analysis;
         private Long subjectId;
         private String subjectName;
+        private Long gradeId;
+        private String gradeName;
         private String knowledgePointIds;
         private String knowledgePointNames;
         private Integer difficulty;

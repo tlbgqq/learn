@@ -91,6 +91,21 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="所属年级" prop="gradeId">
+          <el-select
+            v-model="parentForm.gradeId"
+            placeholder="请选择年级"
+            style="width: 300px"
+          >
+            <el-option
+              v-for="grade in gradeList"
+              :key="grade.id"
+              :label="grade.name"
+              :value="grade.id"
+            />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="关联知识点" prop="knowledgePointIds">
           <el-tree-select
             v-model="parentSelectedKnowledgePoints"
@@ -216,6 +231,23 @@
               <div class="form-tip">继承自父题目，不可修改</div>
             </el-form-item>
 
+            <el-form-item label="所属年级" prop="gradeId">
+              <el-select
+                v-model="childForm.gradeId"
+                disabled
+                placeholder="继承自父题目"
+                style="width: 250px"
+              >
+                <el-option
+                  v-for="grade in gradeList"
+                  :key="grade.id"
+                  :label="grade.name"
+                  :value="grade.id"
+                />
+              </el-select>
+              <div class="form-tip">继承自父题目，不可修改</div>
+            </el-form-item>
+
             <el-form-item label="关联知识点" prop="knowledgePointIds">
               <el-tree-select
                 v-model="childForm.selectedKnowledgePoints"
@@ -254,7 +286,7 @@ import {onMounted, reactive, ref, watch} from 'vue'
 import {useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
 import {CopyDocument, Delete, Plus} from '@element-plus/icons-vue'
-import {knowledgePointApi, questionApi} from '@/api/admin'
+import {gradeApi, knowledgePointApi, questionApi} from '@/api/admin'
 
 const router = useRouter()
 
@@ -262,6 +294,7 @@ const parentFormRef = ref(null)
 const childFormRefs = ref([])
 const loading = ref(false)
 const subjectList = ref([])
+const gradeList = ref([])
 const knowledgeTree = ref([])
 const parentSelectedKnowledgePoints = ref([])
 
@@ -278,6 +311,7 @@ const parentForm = reactive({
   answer: '',
   analysis: '',
   subjectId: null,
+  gradeId: null,
   knowledgePointIds: '',
   difficulty: 3
 })
@@ -302,6 +336,7 @@ const createEmptyChildForm = () => ({
   answer: '',
   analysis: '',
   subjectId: parentForm.subjectId,
+  gradeId: parentForm.gradeId,
   knowledgePointIds: '',
   selectedKnowledgePoints: [],
   difficulty: parentForm.difficulty,
@@ -335,6 +370,7 @@ const inheritSingleFromParent = (index) => {
   }
   const child = childForms.value[index]
   child.subjectId = parentForm.subjectId
+  child.gradeId = parentForm.gradeId
   child.difficulty = parentForm.difficulty
   child.selectedKnowledgePoints = [...parentSelectedKnowledgePoints.value]
   child.knowledgePointIds = parentForm.knowledgePointIds
@@ -375,6 +411,17 @@ const fetchSubjects = async () => {
     }
   } catch (error) {
     console.error('获取学科列表失败', error)
+  }
+}
+
+const fetchGrades = async () => {
+  try {
+    const res = await gradeApi.list()
+    if (res) {
+      gradeList.value = res.data
+    }
+  } catch (error) {
+    console.error('获取年级列表失败', error)
   }
 }
 
@@ -483,6 +530,7 @@ const handleSubmit = async () => {
         answer: parentForm.answer,
         analysis: parentForm.analysis,
         subjectId: parentForm.subjectId,
+        gradeId: parentForm.gradeId,
         knowledgePointIds: parentSelectedKnowledgePoints.value.join(','),
         difficulty: parentForm.difficulty
       },
@@ -493,6 +541,7 @@ const handleSubmit = async () => {
         answer: child.answer,
         analysis: child.analysis,
         subjectId: child.subjectId,
+        gradeId: child.gradeId,
         knowledgePointIds: child.selectedKnowledgePoints ? child.selectedKnowledgePoints.join(',') : '',
         difficulty: child.difficulty
       }))
@@ -533,6 +582,7 @@ const handleBack = () => {
 
 onMounted(() => {
   fetchSubjects()
+  fetchGrades()
 })
 </script>
 

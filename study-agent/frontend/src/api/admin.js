@@ -69,3 +69,8 @@ export const knowledgePointApi = {
   delete: (id) => api.delete(`/admin/knowledge-point/${id}`),
   getSubjects: (params) => api.get('/admin/knowledge-point/subjects', { params })
 }
+
+export const gradeApi = {
+  list: (params) => api.get('/grade', { params }),
+  getById: (id) => api.get(`/grade/${id}`)
+}
