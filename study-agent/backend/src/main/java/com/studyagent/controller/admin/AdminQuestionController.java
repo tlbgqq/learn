@@ -157,6 +157,50 @@ public class AdminQuestionController {
         }
     }
 
+    @GetMapping("/parents")
+    public ApiResponse<List<QuestionVO>> getParentQuestions(
+            @RequestParam(required = false) Long subjectId,
+            @RequestParam(required = false) Long excludeId) {
+        try {
+            LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Question::getParentId, 0L);
+            
+            if (subjectId != null && subjectId > 0) {
+                wrapper.eq(Question::getSubjectId, subjectId);
+            }
+            if (excludeId != null && excludeId > 0) {
+                wrapper.ne(Question::getId, excludeId);
+            }
+            
+            wrapper.orderByDesc(Question::getId);
+            List<Question> questions = questionMapper.selectList(wrapper);
+            
+            return ApiResponse.success(convertToVO(questions));
+        } catch (Exception e) {
+            log.error("获取父题目列表失败", e);
+            return ApiResponse.error("获取失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/children/{parentId}")
+    public ApiResponse<List<QuestionVO>> getChildrenQuestions(@PathVariable Long parentId) {
+        try {
+            if (parentId == null || parentId <= 0) {
+                return ApiResponse.error("父题目ID不能为空");
+            }
+            
+            LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Question::getParentId, parentId);
+            wrapper.orderByAsc(Question::getId);
+            List<Question> questions = questionMapper.selectList(wrapper);
+            
+            return ApiResponse.success(convertToVO(questions));
+        } catch (Exception e) {
+            log.error("获取子题目列表失败", e);
+            return ApiResponse.error("获取失败：" + e.getMessage());
+        }
+    }
+
     @PostMapping("/import")
     public ApiResponse<ImportResultVO> importQuestions(@RequestParam("file") MultipartFile file) {
         try {
@@ -350,6 +394,7 @@ public class AdminQuestionController {
         vo.setKnowledgePointIds(question.getKnowledgePointIds());
         vo.setDifficulty(question.getDifficulty());
         vo.setFrequency(question.getFrequency());
+        vo.setParentId(question.getParentId());
         vo.setCreateTime(question.getCreateTime());
         vo.setModifyTime(question.getModifyTime());
         
@@ -488,6 +533,7 @@ public class AdminQuestionController {
         private String knowledgePointNames;
         private Integer difficulty;
         private Integer frequency;
+        private Long parentId;
         private LocalDateTime createTime;
         private LocalDateTime modifyTime;
     }

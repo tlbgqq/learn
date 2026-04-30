@@ -467,3 +467,7 @@ INSERT INTO t_question (type, content, options, answer, analysis, subject_id, kn
 ('选择', 'He __ a blue bag.', '["A. have","B. has","C. is","D. are"]', 'B', 'he后用has', 3, '67', 1, 95),
 ('填空', '我们是一家人。__ are a family.', '[]', 'We', '考查we的用法', 3, '68', 1, 90),
 ('选择', '下列哪个是错误的复数形式？', '["A. cats","B. dogs","C. childs","D. birds"]', 'C', 'child的复数是children，不是childs', 3, '69', 1, 85);
+
+-- 添加父题目ID字段（支持主子两层）
+ALTER TABLE t_question ADD COLUMN IF NOT EXISTS parent_id BIGINT NOT NULL DEFAULT 0 COMMENT '父题目ID，0表示顶层题目';
+CREATE INDEX IF NOT EXISTS idx_question_parent ON t_question(parent_id);

@@ -69,9 +69,15 @@
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="tableData" stripe @selection-change="handleSelectionChange">
+      <el-table v-loading="loading" :data="tableData" :tree-props="{ children: 'children' }" default-expand-all row-key="id" stripe @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="50" />
         <el-table-column label="ID" prop="id" width="80" />
+        <el-table-column label="层级" prop="parentId" width="80">
+          <template #default="{ row }">
+            <el-tag v-if="row.parentId === 0" size="small" type="primary">主题目</el-tag>
+            <el-tag v-else size="small" type="info">子题目</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="题目内容" min-width="200" prop="content">
           <template #default="{ row }">
             <el-tooltip :content="row.content" placement="top">
@@ -103,8 +109,12 @@
             {{ formatTime(row.createTime) }}
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="150">
+        <el-table-column fixed="right" label="操作" width="250">
           <template #default="{ row }">
+            <el-button v-if="row.parentId === 0" link type="success" @click="handleAddSubQuestion(row)">
+              <el-icon><Plus /></el-icon>
+              添加子题
+            </el-button>
             <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -282,6 +292,39 @@ const fetchKnowledgeTree = async (subjectId) => {
   }
 }
 
+const buildQuestionTree = async (questions) => {
+  const parentQuestions = questions.filter(q => q.parentId === 0)
+  const childQuestionsMap = new Map()
+
+  for (const q of questions) {
+    if (q.parentId > 0) {
+      if (!childQuestionsMap.has(q.parentId)) {
+        childQuestionsMap.set(q.parentId, [])
+      }
+      childQuestionsMap.get(q.parentId).push(q)
+    }
+  }
+
+  const parentsWithChildren = []
+  for (const pq of parentQuestions) {
+    const pqWithChildren = { ...pq }
+    if (childQuestionsMap.has(pq.id)) {
+      pqWithChildren.children = childQuestionsMap.get(pq.id)
+    }
+    parentsWithChildren.push(pqWithChildren)
+  }
+
+  const orphanQuestions = questions.filter(q => 
+    q.parentId > 0 && !questions.some(pq => pq.id === q.parentId)
+  )
+  for (const oq of orphanQuestions) {
+    oq.children = []
+    parentsWithChildren.push(oq)
+  }
+
+  return parentsWithChildren
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
@@ -306,7 +349,7 @@ const fetchData = async () => {
     }
     const res = await questionApi.list(params)
     if (res.success) {
-      tableData.value = res.data.records
+      tableData.value = await buildQuestionTree(res.data.records)
       pagination.total = res.data.total
     }
   } catch (error) {
@@ -338,6 +381,13 @@ const handleReset = () => {
 
 const handleAdd = () => {
   router.push('/admin/question/add')
+}
+
+const handleAddSubQuestion = (row) => {
+  router.push({
+    path: '/admin/question/add',
+    query: { parentId: row.id, subjectId: row.subjectId }
+  })
 }
 
 const handleEdit = (row) => {

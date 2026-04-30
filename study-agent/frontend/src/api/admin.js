@@ -54,7 +54,9 @@ export const questionApi = {
     params, 
     responseType: 'blob' 
   }),
-  getTemplate: () => api.get('/admin/question/template', { responseType: 'blob' })
+  getTemplate: () => api.get('/admin/question/template', { responseType: 'blob' }),
+  getParents: (params) => api.get('/admin/question/parents', { params }),
+  getChildren: (parentId) => api.get(`/admin/question/children/${parentId}`)
 }
 
 export const knowledgePointApi = {

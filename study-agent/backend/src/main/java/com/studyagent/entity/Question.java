@@ -20,6 +20,7 @@ public class Question {
     private String knowledgePointIds = "";
     private Integer difficulty = 1;
     private Integer frequency = 0;
+    private Long parentId = 0L;
 
     @TableLogic
     private Integer del = 0;
