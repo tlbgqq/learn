@@ -17,6 +17,7 @@ public class Question {
     private String answer = "";
     private String analysis = "";
     private Long subjectId = 0L;
+    private Long gradeId = 0L;
     private String knowledgePointIds = "";
     private Integer difficulty = 1;
     private Integer frequency = 0;
