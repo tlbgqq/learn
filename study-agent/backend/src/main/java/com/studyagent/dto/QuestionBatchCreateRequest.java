@@ -17,6 +17,7 @@ public class QuestionBatchCreateRequest {
         private String answer;
         private String analysis;
         private Long subjectId;
+        private Long gradeId;
         private String knowledgePointIds;
         private Integer difficulty;
     }

@@ -95,6 +95,7 @@
           </template>
         </el-table-column>
         <el-table-column label="学科" prop="subjectName" width="100" />
+        <el-table-column label="年级" prop="gradeName" width="100" />
         <el-table-column label="知识点" min-width="150" prop="knowledgePointNames">
           <template #default="{ row }">
             <el-tooltip :content="row.knowledgePointNames" placement="top">

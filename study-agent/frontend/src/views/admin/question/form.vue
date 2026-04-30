@@ -106,6 +106,21 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item label="所属年级" prop="gradeId">
+          <el-select
+            v-model="form.gradeId"
+            placeholder="请选择年级"
+            style="width: 300px"
+          >
+            <el-option
+              v-for="grade in gradeList"
+              :key="grade.id"
+              :label="grade.name"
+              :value="grade.id"
+            />
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="关联知识点" prop="knowledgePointIds">
           <el-tree-select
             v-model="selectedKnowledgePoints"
@@ -139,7 +154,7 @@
 import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {ElMessage} from 'element-plus'
-import {knowledgePointApi, questionApi} from '@/api/admin'
+import {gradeApi, knowledgePointApi, questionApi} from '@/api/admin'
 
 const route = useRoute()
 const router = useRouter()
@@ -147,6 +162,7 @@ const router = useRouter()
 const formRef = ref(null)
 const loading = ref(false)
 const subjectList = ref([])
+const gradeList = ref([])
 const knowledgeTree = ref([])
 const selectedKnowledgePoints = ref([])
 const parentQuestionList = ref([])
@@ -168,6 +184,7 @@ const form = reactive({
   answer: '',
   analysis: '',
   subjectId: null,
+  gradeId: null,
   knowledgePointIds: '',
   difficulty: 3,
   parentId: 0
@@ -220,6 +237,17 @@ const fetchSubjects = async () => {
     }
   } catch (error) {
     console.error('获取学科列表失败', error)
+  }
+}
+
+const fetchGrades = async () => {
+  try {
+    const res = await gradeApi.list()
+    if (res) {
+      gradeList.value = res.data
+    }
+  } catch (error) {
+    console.error('获取年级列表失败', error)
   }
 }
 
@@ -277,6 +305,7 @@ const fetchQuestionDetail = async () => {
       form.answer = data.answer || ''
       form.analysis = data.analysis || ''
       form.subjectId = data.subjectId
+      form.gradeId = data.gradeId
       form.difficulty = data.difficulty || 3
       form.parentId = data.parentId || 0
       currentParentId.value = data.parentId || 0
@@ -367,6 +396,7 @@ const handleBack = () => {
 
 onMounted(() => {
   fetchSubjects()
+  fetchGrades()
   
   const queryParentId = route.query.parentId ? parseInt(route.query.parentId) : 0
   const querySubjectId = route.query.subjectId ? parseInt(route.query.subjectId) : null
