@@ -237,7 +237,11 @@ const fetchGrades = async () => {
   try {
     const res = await gradeApi.list()
     if (res) {
-      gradeList.value = res.data
+      if (Array.isArray(res)) {
+        gradeList.value = res
+      } else if (res.data && Array.isArray(res.data)) {
+        gradeList.value = res.data
+      }
     }
   } catch (error) {
     console.error('获取年级列表失败', error)
